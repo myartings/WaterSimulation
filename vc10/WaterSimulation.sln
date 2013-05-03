@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WaterSimulation", "WaterSimulation.vcxproj", "{1530C579-7B4C-4326-8043-323C24C527AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1530C579-7B4C-4326-8043-323C24C527AF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1530C579-7B4C-4326-8043-323C24C527AF}.Debug|Win32.Build.0 = Debug|Win32
+		{1530C579-7B4C-4326-8043-323C24C527AF}.Release|Win32.ActiveCfg = Release|Win32
+		{1530C579-7B4C-4326-8043-323C24C527AF}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
