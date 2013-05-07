@@ -62,7 +62,7 @@ struct Array3{
 	{ 
 		float result =0;
 		//TODO separate this into if statement
-		if (i>=0 && i<this->nx){ 
+		/*if (i>=0 && i<this->nx){ 
 			if(j>=0 && j<this->ny){
 				if(k>=0 && k<this->nz)//i,j,k
 					result +=(1-fx)*(1-fy)*(1-fz)*(*this)(i,j,k);
@@ -91,7 +91,7 @@ struct Array3{
 			}
 			}
 			}
-		}
+		}*/
 
 
 		/* if(i>=0&&j>=0&&k>=0&&i<this->nx&&j<this->ny&&k<this->nz){
@@ -105,11 +105,11 @@ struct Array3{
 		+fy*((1-fz)*((i<this->nx-1&&j<this->ny-1)?((*this)(i+1,j+1,k)):0)
 		+fz*((i<this->nx-1&&j<this->ny-1&&k<this->nz-1)?((*this)(i+1,j+1,k+1)):0)));
 		*/			 
-		/*(1-fx)*((1-fy)*((1-fz)*(*this)(i,j,k)+fz*(*this)(i,j,k+1))
+		result = (1-fx)*((1-fy)*((1-fz)*(*this)(i,j,k)+fz*(*this)(i,j,k+1))
 		+fy*((1-fz)*(*this)(i,j+1,k)+fz*(*this)(i,j+1,k+1)))+
 		fx*((1-fy)*((1-fz)*(*this)(i+1,j,k)+fz*(*this)(i+1,j,k+1))
-		+fy*((1-fz)*(*this)(i+1,j+1,k)+fz*(*this)(i+1,j+1,k+1)));*/
-
+		+fy*((1-fz)*(*this)(i+1,j+1,k)+fz*(*this)(i+1,j+1,k+1)));
+		
 		return  result;
 
 	}

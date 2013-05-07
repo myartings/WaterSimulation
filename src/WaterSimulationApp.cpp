@@ -53,6 +53,7 @@ public:
 	bool					mAddNewForce;
 	bool					mDrawBox;
 	bool					mDrawGrid;
+	bool					mDrawForce;
 };
 
 void WaterSimulationApp::setup(){
@@ -84,9 +85,10 @@ void WaterSimulationApp::setup(){
 	mDrawBox	=true;
 
 
-	mParams = params::InterfaceGl::create( getWindow(), "Water Simulation Parameters", toPixels( Vec2i( 300,100  ) ) );
+	mParams = params::InterfaceGl::create( getWindow(), "Water Simulation Parameters", toPixels( Vec2i( 250,300  ) ) );
 	mParams->addParam("Draw Box", &mDrawBox);
 	mParams->addParam("Draw Grid",&mDrawGrid);
+	mParams->addParam("Draw Random Force",&mDrawForce);
 	mParams->addSeparator();
 	mParams->addParam("External Force Position",&randomForceX);
 	mParams->addParam("External Force Dir",&randomForce);
@@ -136,7 +138,7 @@ void WaterSimulationApp::keyUp(KeyEvent event){
 				(float)(rand()%(int)boxCenter.y/2.0f),
 				(float)(rand()%(int)boxCenter.z/2.0f));
 			if(rand()%2)randomForce*=-1;
-			randomForce*=100;
+			randomForce*=1000;
 		}
 		break;
 	}
@@ -187,7 +189,7 @@ void WaterSimulationApp::draw(){
 
 	gl::setMatrices(mMayaCam.getCamera());
 	if(mDrawBox){
-		glColor4f(1, 0.75, 0.5, 1);//orange
+		glColor4f(0.2, 0.4, 0.5, 1);//orange
 		gl::drawStrokedCube(boxCenter,boxDimension);
 	}
 	if(mDrawGravity){
@@ -196,10 +198,12 @@ void WaterSimulationApp::draw(){
 		gl::drawVector(boxCenter,(boxCenter-gravity),3.0f,1.0f);
 	}
 
-	//draw random force 
-	if(randomForce.lengthSquared()!=0){
-		glColor4f(1.0f,0.0f,0.0f,1);
-		gl::drawVector(randomForceX,randomForce+randomForceX,1.0f,0.5f);
+	//draw random force
+	if(mDrawForce){
+		if(randomForce.lengthSquared()!=0){
+			glColor4f(1.0f,0.0f,0.0f,1);
+			gl::drawVector(randomForceX,randomForce+randomForceX,1.0f,0.5f);
+		}
 	}
 
 	fluidsys->draw();
