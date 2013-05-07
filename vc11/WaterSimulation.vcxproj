@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\Array3.h" />
+    <ClInclude Include="..\include\FluidSystem.h" />
     <ClInclude Include="..\include\Source.h" />
     <ClInclude Include="..\include\StamFluidSystem.h" />
     <ClInclude Include="..\include\Resources.h" />

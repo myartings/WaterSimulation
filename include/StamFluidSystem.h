@@ -6,58 +6,46 @@ Stam Semi Lagrangian Fluid Grid System
 */
 #pragma once 
 #include "Array3.h"
-#include "Source.h"
 #include "cinder/app/AppBasic.h"
-#include <vector>
+#include "FluidSystem.h"
 using namespace ci;
 using namespace ci::app;
 using namespace std;
 
-class StamFluidSystem{
+class StamFluidSystem:public FluidSystem{
 
 public :
 	StamFluidSystem(){}
-	~StamFluidSystem(){
-		delete u0;delete v0; delete density0;delete pressure;
-		delete w0;delete u1; delete density1;
-		delete v1;delete w1; delete divergence;
+	~StamFluidSystem(){}
+
+	unique_ptr<Array3f> u1,v1,w1;
+
+	
+
+private:
+	
+	void diffuse(int bnd, unique_ptr<Array3f> &x, const unique_ptr<Array3f>&x0,float diff,float dt);
+	void transport(unique_ptr<Array3f> &x,float dt);
+	void project(unique_ptr<Array3f> &x,float dt);
+	void linear_solve(int bnd,unique_ptr<Array3f> &x, const unique_ptr<Array3f> &x0, float a, float div,float dt);
+	void set_boundary(int bnd,unique_ptr<Array3f> &x);
+	void swap_velocity();
+
+	void  getVelocity(Vec3f pos,Vec3f &vel);
+	void  traceParticle(Vec3f x0,float h, Vec3f &x1);
+	
+	//virtual 
+	void reset_derived(Vec3i dim){
+		console()<<"stam fluid system reset"<<endl;
+		u1.reset(new Array3f(gridDim.x,gridDim.y,gridDim.z));
+		v1.reset(new Array3f(gridDim.x,gridDim.y,gridDim.z));
+		w1.reset(new Array3f(gridDim.x,gridDim.y,gridDim.z));
 	}
-	ci::Vec3i	gridDim;
-	ci::Vec3i	cellDim;
-	double		elapsed;
-
-	Array3f *u0,*v0,*w0,
-		*u1,*v1,*w1;
-	Array3f *density0,*density1;
-	Array3f *divergence, *pressure;
-	vector<Source> sources;
-
-	Vec3f getVelocity(Vec3f pos);
-	float interpolate(Vec3f pos,  const Array3f *s);
-
-	void step(float dt);
-	void reset(ci::Vec3i dim){
-		console()<<"RESET: stam fluid sytem.-----"<<endl;
-		gridDim=dim;
-		cellDim=Vec3i(1,1,1);
-		gridDim+=2;//add boundary cell
-		u0=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-		u1=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-		v0=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-		v1=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-		w0=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-		w1=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-
-		density0=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-		density1=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-
-		divergence=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-		pressure=new Array3f(gridDim.x,gridDim.y,gridDim.z);
-		gridDim-=2;//remove boundary cell.
-		if(!sources.empty())sources.clear();
-		elapsed=0;
-	}
-
+	void interpolate_index(Vec3f &pos,Vec3i &index, Vec3f &ifloat);
+	void source_step(float dt);
+	void velocity_step(float dt);
+	void scalar_step(float dt);
+	void drawVelocity();
 };
 
 
