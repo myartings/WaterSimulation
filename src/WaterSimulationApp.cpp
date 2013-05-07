@@ -136,6 +136,7 @@ void WaterSimulationApp::keyUp(KeyEvent event){
 				(float)(rand()%(int)boxCenter.y/2.0f),
 				(float)(rand()%(int)boxCenter.z/2.0f));
 			if(rand()%2)randomForce*=-1;
+			randomForce*=100;
 		}
 		break;
 	}

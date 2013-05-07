@@ -167,4 +167,5 @@ typedef Array3<float> Array3f;
 typedef Array3<double> Array3d;
 typedef Array3<char> Array3c;
 
+typedef std::unique_ptr<struct Array3<float>> Array3fRef;
 #endif

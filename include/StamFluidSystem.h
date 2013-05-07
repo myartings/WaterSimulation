@@ -18,17 +18,17 @@ public :
 	StamFluidSystem(){}
 	~StamFluidSystem(){}
 
-	unique_ptr<Array3f> u1,v1,w1;
+	Array3fRef u1,v1,w1;
 
 	
 
 private:
 	
-	void diffuse(int bnd, unique_ptr<Array3f> &x, const unique_ptr<Array3f>&x0,float diff,float dt);
-	void transport(unique_ptr<Array3f> &x,float dt);
-	void project(unique_ptr<Array3f> &x,float dt);
-	void linear_solve(int bnd,unique_ptr<Array3f> &x, const unique_ptr<Array3f> &x0, float a, float div,float dt);
-	void set_boundary(int bnd,unique_ptr<Array3f> &x);
+	void diffuse(int bnd, Array3fRef &x, const Array3fRef&x0,float diff,float dt);
+	void transport(int bnd, Array3fRef &x,Array3fRef &x0, Array3fRef &u,Array3fRef &v,Array3fRef &w, float dt);
+	void project(Array3fRef &u,Array3fRef &v,Array3fRef &w,Array3fRef &div,Array3fRef &p);
+	void linear_solve(int bnd,Array3fRef &x, const Array3fRef &x0, float a, float div);
+	void set_boundary(int bnd,Array3fRef &x);
 	void swap_velocity();
 
 	void  getVelocity(Vec3f pos,Vec3f &vel);

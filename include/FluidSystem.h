@@ -23,9 +23,9 @@ public:
 	float					buoyancy;
 	int						iterations;
 
-	unique_ptr<Array3f> u0,v0,w0;
-	unique_ptr<Array3f> temperature0,temperature1;
-	unique_ptr<Array3f> divergence, pressure;
+	Array3fRef u0,v0,w0;
+	Array3fRef temperature0,temperature1;
+	Array3fRef divergence, pressure;
 	vector<Source> sources;
 
 	void step(float dt){
@@ -72,7 +72,7 @@ public:
 		if(mDrawVelocity)drawVelocity();	
 	}
 	
-	void addSource(Vec3f x,float dt,unique_ptr<Array3f> &s,float force){
+	void addSource(Vec3f x,float dt,Array3fRef &s,float force){
 	
 		Vec3i index;
 		Vec3f ifloat;

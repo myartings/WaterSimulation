@@ -28,7 +28,7 @@ void StamFluidSystem::getVelocity( Vec3f pos,Vec3f &vel )
 	vel.x=u0->trilerp(index.x,index.y,index.z,ifloat.x,ifloat.y, ifloat.z);
 	vel.y=v0->trilerp(index.x,index.y,index.z,ifloat.x,ifloat.y, ifloat.z);
 	vel.z=w0->trilerp(index.x,index.y,index.z,ifloat.x,ifloat.y, ifloat.z);
-	
+
 }
 void StamFluidSystem::traceParticle( Vec3f x0,float h, Vec3f &x1 )
 {
@@ -51,18 +51,13 @@ void StamFluidSystem::velocity_step( float dt )
 	diffuse(1, u1, u0, viscosity, dt);
 	diffuse(2, v1, v0, viscosity, dt);
 	diffuse(3, w1, w0, viscosity, dt);
+	project(u1, v1, w1, divergence, pressure);
 	swap_velocity();
-	/*		//project(u,v,u0,v0);
-	project(u, v, divergence, pressure);
-	float [][]temp=U0;
-	U0=U1;
-	U1=temp;
-	transport(1, u, u0, u0, v0, dt);
-	transport(2, v, v0, u0, v0, dt);
-	//        project(u, v, divergence, pressure);
-
-	// project(u, v, u0,v0);
-	*/
+	transport(1, u1, u0, u0, v0, w0, dt);
+	transport(2, v1, v0, u0, v0, w0, dt);
+	transport(3, w1, w0, u0, v0, w0, dt);
+	//project(u1, v1, w1, divergence, pressure);
+	
 }
 void StamFluidSystem::scalar_step( float dt )
 {
@@ -74,16 +69,16 @@ void StamFluidSystem::drawVelocity()
 	Vec3f velo=Vec3f::zero(),pos;
 	//cell center
 	glColor3f(0,1,0);
-	for(int i=0;i<=gridDim.x+1;i++){
-		for(int j=0;j<=gridDim.y+1;j++){
-			for(int k=0;k<=gridDim.z+1;k++){
+	for(int i=11;i<=20;i++){
+		for(int j=11;j<=20;j++){
+			for(int k=11;k<=20;k++){
 				pos=Vec3f(i,j,k);
 				pos*=cellDim;
 				getVelocity(pos,velo);
 				if(velo.lengthSquared()!=0){
 					pos-=0.5f;
 					velo+=pos;
-					gl::drawVector(pos,velo);
+					gl::drawVector(pos,velo,0.1f,0.02f);
 				}
 			}
 		}
@@ -98,17 +93,16 @@ void StamFluidSystem::drawVelocity()
 	//stagger cell border
 }
 
-void StamFluidSystem::diffuse( int bnd, unique_ptr<Array3f> &x, const unique_ptr<Array3f>&x0,float diff,float dt )
+void StamFluidSystem::diffuse( int bnd, Array3fRef &x, const Array3fRef&x0,float diff,float dt )
 {
 	float a1 = dt * diff *gridDim.x*gridDim.y,
 		a2 = dt * diff *gridDim.x*gridDim.z,
 		a3 = dt * diff *gridDim.y*gridDim.z,
 		av = (a1+a2+a3)/3.0f,
 		div=(1.0f+6.0f*av);
-	linear_solve(bnd, x,x0,av,div,dt);
+	linear_solve(bnd, x,x0,av,div);
 }
-
-void StamFluidSystem::linear_solve(int bnd, unique_ptr<Array3f> &x, const unique_ptr<Array3f> &x0, float a, float div,float dt )
+void StamFluidSystem::linear_solve(int bnd, Array3fRef &x, const Array3fRef &x0, float a, float div)
 {
 	int i,j,k,m;		
 	for (m = 0; m < iterations; m++) {
@@ -131,8 +125,7 @@ void StamFluidSystem::linear_solve(int bnd, unique_ptr<Array3f> &x, const unique
 		set_boundary(bnd, x);
 	}
 }
-
-void StamFluidSystem::set_boundary( int bnd,unique_ptr<Array3f> &x )
+void StamFluidSystem::set_boundary( int bnd,Array3fRef &x )
 {
 
 	//x->n* = N*+2, 
@@ -169,11 +162,67 @@ void StamFluidSystem::set_boundary( int bnd,unique_ptr<Array3f> &x )
 	(*x)(x->nx-1,x->ny-1, x->nz-1) = 0.33f * ((*x)(x->nx-2,x->ny-1,x->nz-1) + (*x)(x->nx-1,x->ny-2,x->nz-1)+(*x)(x->nx-1,x->ny-1,x->nz-2));
 
 }
-
 void StamFluidSystem::swap_velocity()
 {	u0.swap(u1);
 v0.swap(v1);
 w0.swap(w1);
+}
+
+void StamFluidSystem::project( Array3fRef &u,Array3fRef &v,Array3fRef &w,Array3fRef &div,Array3fRef &p )
+{
+
+	int i, j, k, m;
+	for (i = 1; i <=gridDim.x; i++) {
+		for (j = 1; j <=gridDim.y; j++){
+			for(k=1;k<=gridDim.z;k++){
+				(*div)(i,j,k) = -0.5f*
+					(((*u)(i + 1, j,k)
+					- (*u)(i - 1, j,k))/gridDim.x 
+					+((*v)(i, j + 1,k)
+					- (*v)(i, j - 1,k))/gridDim.y
+					+((*w)(i, j,  k+1)
+					- (*w)(i, j,  k-1))/gridDim.z);
+				(*p)(i,j,k) = 0;
+			}
+		}
+	}
+
+	set_boundary(0, div);
+	set_boundary(0, p);
+	linear_solve(0,p,div,1.0f,6.0f);
+
+	for (i = 1; i <= gridDim.x; i++) {
+		for (j = 1; j <= gridDim.y; j++) {
+			for(k=1;k<=gridDim.z;k++){
+				(*u)(i, j,k) -= 0.5 * ((*p)(i + 1,j,k )-(*p)(i - 1,j,k))*gridDim.x;
+				(*v)(i, j,k) -= 0.5 * ((*p)(i, j + 1,k)-(*p)(i, j - 1,k))*gridDim.y;
+				(*w)(i, j,k) -= 0.5 * ((*p)(i, j,  k+1)-(*p)(i, j, k-1))*gridDim.z;
+			}
+		}
+	}
+	set_boundary(1, u);
+	set_boundary(2, v);
+	set_boundary(3, w);
+
+}
+void StamFluidSystem::transport( int bnd, Array3fRef &x,Array3fRef &x0, Array3fRef &u,Array3fRef &v,Array3fRef &w, float dt )
+{ 
+	int i,j,k;
+	Vec3i index;
+	Vec3f p0,p1=Vec3f::zero(),ifloat;
+	for(i=1;i<=gridDim.x;i++){
+		for(j=1;j<=gridDim.y;j++){
+			for(k=1;k<=gridDim.z;k++){
+				p0=Vec3f(i,j,k);
+				p0+=0.5f;
+				p0*=cellDim;
+				traceParticle(p0,-dt,p1);
+				this->interpolate_index(p1,index,ifloat);
+				(*x)(i,j,k)=x0->trilerp(index.x,index.y,index.z,ifloat.x,ifloat.y,ifloat.z);
+			}
+		}
+	}
+	set_boundary(bnd,x);
 }
 
 
